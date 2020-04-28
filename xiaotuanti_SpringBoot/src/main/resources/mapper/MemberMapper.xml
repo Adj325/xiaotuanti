@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.MemberDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Member" id="MemberResultMap">
+        <id property="id" column="member_id"/>
+        <result property="id" column="member_id"/>
+        <result property="job" column="member_job"/>
+        <result property="level" column="member_level" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <!-- 联系方式 -->
+        <result property="stuno" column="member_stuno"/>
+        <result property="weixin" column="member_weixin"/>
+        <result property="email" column="member_email"/>
+        <result property="qq" column="member_qq"/>
+        <result property="phone" column="member_phone"/>
+        <!-- 住址信息 -->
+        <result property="province" column="member_province"/>
+        <result property="country" column="member_country"/>
+        <result property="address" column="member_address"/>
+        <result property="city" column="member_city"/>
+        <result property="dormitory" column="member_dormitory"/>
+        <!-- 特殊信息 -->
+        <result property="special" column="member_special"/>
+
+        <association property="user" column="{userId=member_user}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+
+        <association property="team" column="{teamId=member_team}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById"/>
+
+        <association property="section" column="{sectionId=member_section}"
+                     select="com.adj.xiaotuanti.dao.SectionDAO.getSectionById"/>
+
+        <association property="recordNumber" column="{memberId=member_id}"
+                     select="com.adj.xiaotuanti.dao.Relation_Activity_UserDAO.getRecordNumberByMemberId"/>
+    </resultMap>
+
+    <!-- 获取所有Members -->
+    <select id="getAllMembers" resultMap="MemberResultMap">
+        select * from Member
+    </select>
+
+    <!-- 根据id找成员 -->
+    <select id="getMemberById" resultMap="MemberResultMap">
+        select * from Member where member_id = #{memberId}
+    </select>
+
+    <!-- 根据团体id找成员 -->
+    <select id="getMembersByTeamId" resultMap="MemberResultMap">
+        select * from Member where member_team = #{teamId}
+        order by member_section
+    </select>
+
+    <select id="getMembersBySectionId" resultMap="MemberResultMap">
+        select * from Member where member_section = #{sectionId}
+    </select>
+
+    <!-- 统计数量 -->
+    <select id="getMembersNumBySectionId" resultType="Integer">
+        select count(member_id) from Member where member_section = #{sectionId}
+    </select>
+
+    <!-- 根据团体id及用户id，找成员 -->
+    <select id="getMemberByUserIdAndTeamId" resultMap="MemberResultMap">
+        select * from Member
+        where member_team = #{teamId} and member_user = #{userId};
+    </select>
+
+    <select id="getMemberByUserIdAndActivityId" resultMap="MemberResultMap">
+        select * from Member LEFT JOIN team t on member.member_team = t.team_id LEFT JOIN activity a on t.team_id = a.activity_team
+        where activity_id = #{activityId} and member_user = #{userId};
+    </select>
+
+    <!-- 根据团体id及用户id，找成员 -->
+    <select id="getMemberByUserAndTeam" resultMap="MemberResultMap" parameterType="com.adj.xiaotuanti.pojo.Member">
+        select * from Member
+        where member_team = #{member.team.id} and member_user = #{member.user.id};
+    </select>
+
+    <!-- 添加用户 -->
+    <insert id="addMember" parameterType="com.adj.xiaotuanti.pojo.Member"
+            useGeneratedKeys="true" keyProperty="member.id">
+        insert into Member(
+            member_team
+            <if test="member.user != null and member.user.id !=''">
+                ,member_user
+            </if>
+            <if test="member.section != null and member.section.id !=''">
+                ,member_section
+            </if>
+            <if test="member.job != null and member.job !=''">
+                ,member_job
+            </if>
+            <if test="member.level != null">
+                ,member_level
+            </if>
+            <if test="member.stuno != null and member.stuno !=''">
+                ,member_stuno
+            </if>
+            <if test="member.weixin != null and member.weixin !=''">
+                ,member_weixin
+            </if>
+            <if test="member.email != null and member.email !=''">
+                ,member_email
+            </if>
+            <if test="member.qq != null and member.qq !=''">
+                ,member_qq
+            </if>
+            <if test="member.phone != null and member.phone !=''">
+                ,member_phone
+            </if>
+            <if test="member.province != null and member.province !=''">
+                ,member_province
+            </if>
+            <if test="member.country != null and member.country !=''">
+                ,member_country
+            </if>
+            <if test="member.address != null and member.address !=''">
+                ,member_address
+            </if>
+            <if test="member.city != null and member.city !=''">
+                ,member_city
+            </if>
+            <if test="member.dormitory != null and member.dormitory !=''">
+                ,member_dormitory
+            </if>
+            <if test="member.special != null and member.special !=''">
+                ,member_special
+            </if>
+        ) value (
+            #{member.team.id}
+            <if test="member.user != null and member.user.id !=''">
+                ,#{member.user.id}
+            </if>
+            <if test="member.section != null and member.section.id !=''">
+                ,#{member.section.id}
+            </if>
+            <if test="member.job != null and member.job !=''">
+                ,#{member.job}
+            </if>
+            <if test="member.level != null">
+                ,#{member.level, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+            </if>
+            <if test="member.stuno != null and member.stuno !=''">
+                ,#{member.stuno}
+            </if>
+            <if test="member.weixin != null and member.weixin !=''">
+                ,#{member.weixin}
+            </if>
+            <if test="member.email != null and member.email !=''">
+                ,#{member.email}
+            </if>
+            <if test="member.qq != null and member.qq !=''">
+                ,#{member.qq}
+            </if>
+            <if test="member.phone != null and member.phone !=''">
+                ,#{member.phone}
+            </if>
+            <if test="member.province != null and member.province !=''">
+                ,#{member.province}
+            </if>
+            <if test="member.country != null and member.country !=''">
+                ,#{member.country}
+            </if>
+            <if test="member.address != null and member.address !=''">
+                ,#{member.address}
+            </if>
+            <if test="member.city != null and member.city !=''">
+                ,#{member.city}
+            </if>
+            <if test="member.dormitory != null and member.dormitory !=''">
+                ,#{member.dormitory}
+            </if>
+            <if test="member.special != null and member.special !=''">
+                ,#{member.special}
+            </if>
+        );
+
+    </insert>
+
+    <delete id="deleteMember" parameterType="com.adj.xiaotuanti.pojo.Member">
+        delete from Member where member_id = #{member.id};
+    </delete>
+
+    <delete id="deleteMemberById">
+        delete from Member where member_id = #{memberId};
+    </delete>
+
+    <!-- 更新用户 -->
+    <update id="updateMember" parameterType="com.adj.xiaotuanti.pojo.Member">
+        update Member
+        set
+            member_id = #{member.id}
+            <if test="member.team!=null and member.team.id!=''">
+                ,member_team = #{member.team.id}
+            </if>
+            <if test="member.user!=null and member.user.id!=''">
+                ,member_user = #{member.user.id}
+            </if>
+            <if test="member.section!=null and member.section.id!=''">
+                ,member_section = #{member.section.id}
+            </if>
+            <if test="member.job!=null and member.job!=''">
+                ,member_job = #{member.job}
+            </if>
+            <if test="member.level!=null and member.level!=''">
+                ,member_level = #{member.level, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+            </if>
+            <if test="member.weixin!=null and member.weixin!=''">
+                ,member_weixin = #{member.weixin}
+            </if>
+            <if test="member.stuno != null and member.stuno !=''">
+                ,member_stuno=#{member.stuno}
+            </if>
+            <if test="member.email!=null and member.email!=''">
+                ,member_email = #{member.email}
+            </if>
+            <if test="member.qq!=null and member.qq!=''">
+                ,member_qq = #{member.qq}
+            </if>
+            <if test="member.phone!=null and member.phone!=''">
+                ,member_phone = #{member.phone}
+            </if>
+            <if test="member.province!=null and member.province!=''">
+                ,member_province = #{member.province}
+            </if>
+            <if test="member.country!=null and member.country!=''">
+                ,member_country = #{member.country}
+            </if>
+            <if test="member.address!=null and member.address!=''">
+                ,member_address = #{member.address}
+            </if>
+            <if test="member.city!=null and member.city!=''">
+                ,member_city = #{member.city}
+            </if>
+            <if test="member.dormitory!=null and member.dormitory!=''">
+                ,member_dormitory = #{member.dormitory}
+            </if>
+            <if test="member.special!=null and member.special!=''">
+                ,member_special = #{member.special}
+            </if>
+        where member_id = #{member.id}
+    </update>
+
+    <!-- 撤销管理员的权限 -->
+    <update id="revokeManagerPermissionByTeamId">
+        update Member set member_level = 0
+        where member_level = 1 and member_team = #{teamId}
+    </update>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.BinDAO">
+
+    <!-- resultMap -->
+
+    <resultMap type="com.adj.xiaotuanti.pojo.Bin" id="BinResultMap">
+        <id property="id" column="bin_id"/>
+        <result property="path" column="bin_path" javaType="String"/>
+        <result property="type" column="bin_type" javaType="String"/>
+        <result property="name" column="bin_name" javaType="String"/>
+    </resultMap>
+
+
+    <!-- add -->
+    <insert id="addBin" parameterType="com.adj.xiaotuanti.pojo.Bin"
+            useGeneratedKeys="true" keyProperty="bin.id">
+        insert into Bin (
+        bin_path
+        <if test=" bin.type != null ">
+            , bin_type
+        </if>
+        <if test=" bin.name != null and bin.name !='' ">
+            , bin_name
+        </if>
+        ) value (
+        #{bin.path}
+        <if test=" bin.type != null ">
+            , #{bin.type}
+        </if>
+        <if test=" bin.name != null and bin.name !='' ">
+            , #{bin.name}
+        </if>
+        );
+    </insert>
+
+
+    <!-- update -->
+    <update id="updateBin" parameterType="com.adj.xiaotuanti.pojo.Bin" >
+        update Bin set
+        bin_id = #{bin.id}
+        <if test=" bin.path != null and bin.path !='' ">
+            , bin_path=#{bin.path}
+        </if>
+        <if test=" bin.type != null ">
+            , bin_type=#{bin.type}
+        </if>
+        <if test=" bin.name != null and bin.name !='' ">
+            , bin_name=#{bin.name}
+        </if>
+        where bin_id = #{bin.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteBin" parameterType="com.adj.xiaotuanti.pojo.Bin">
+        delete from Bin where bin_id = #{bin.id};
+    </delete>
+    <delete id="deleteBinById">
+        delete from Bin where bin_id = #{binId};
+    </delete>
+
+    <!-- select -->
+    <select id="getBin" parameterType="com.adj.xiaotuanti.pojo.Bin" resultMap="BinResultMap">
+        select * from Bin where bin_id = #{bin.id};
+    </select>
+
+    <select id="getBinById" resultMap="BinResultMap">
+        select * from Bin where bin_id = #{binId};
+    </select>
+
+</mapper>

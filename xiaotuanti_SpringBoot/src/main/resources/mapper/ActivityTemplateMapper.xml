@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ActivityTemplateDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.ActivityTemplate" id="ActivityTemplateResultMap">
+        <id property="id" column="ActivityTemplate_id"/>
+        <result property="name" column="ActivityTemplate_name" javaType="String"/>
+        <result property="open" column="ActivityTemplate_open" javaType="java.lang.Boolean"/>
+        <result property="introduction" column="ActivityTemplate_introduction" javaType="String"/>
+        <result property="createTime" column="ActivityTemplate_createTime" javaType="DATE"/>
+
+        <association property="collectNumber" column="{activityTemplateId=ActivityTemplate_id}"
+                     select="com.adj.xiaotuanti.dao.Relation_User_ActivityTemplateDAO.countByActivityTemplateId"/>
+        <association property="tags" column="{templateId=ActivityTemplate_id}"
+                     select="com.adj.xiaotuanti.dao.TagDAO.getTagsByActivityTemplateId"/>
+        <association property="parts" column="{activityTemplateId=ActivityTemplate_id}"
+                     select="com.adj.xiaotuanti.dao.PartTemplateDAO.getPartTemplatesByActivityTemplateId"/>
+        <association property="teamOwner" column="{teamId=ActivityTemplate_teamOwner}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById"/>
+        <association property="sourceActivity" column="{activityId=ActivityTemplate_sourceActivity}"
+                     select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById"/>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addActivityTemplate" parameterType="com.adj.xiaotuanti.pojo.ActivityTemplate"
+            useGeneratedKeys="true" keyProperty="activityTemplate.id">
+        insert into ActivityTemplate (
+        ActivityTemplate_teamOwner
+        <if test=" activityTemplate.sourceActivity != null and activityTemplate.sourceActivity.id !='' ">
+            , activityTemplate_sourceActivity
+        </if>
+        <if test=" activityTemplate.name != null and activityTemplate.name !='' ">
+            , ActivityTemplate_name
+        </if>
+        <if test=" activityTemplate.introduction != null and activityTemplate.introduction !='' ">
+            , ActivityTemplate_introduction
+        </if>
+        <if test=" activityTemplate.open != null ">
+            , ActivityTemplate_open
+        </if>
+        <if test=" activityTemplate.createTime != null ">
+            , ActivityTemplate_createTime
+        </if>
+        ) value (
+        #{activityTemplate.teamOwner.id}
+        <if test=" activityTemplate.sourceActivity != null and activityTemplate.sourceActivity.id !='' ">
+            , #{activityTemplate.sourceActivity.id}
+        </if>
+        <if test=" activityTemplate.name != null and activityTemplate.name !='' ">
+            , #{activityTemplate.name}
+        </if>
+
+        <if test=" activityTemplate.introduction != null and activityTemplate.introduction !='' ">
+            , #{activityTemplate.introduction}
+        </if>
+
+        <if test=" activityTemplate.open != null ">
+            , #{activityTemplate.open}
+        </if>
+        <if test=" activityTemplate.createTime != null ">
+            , #{activityTemplate.createTime}
+        </if>
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updateActivityTemplate" parameterType="com.adj.xiaotuanti.pojo.ActivityTemplate">
+        update ActivityTemplate set
+        ActivityTemplate_id = #{activityTemplate.id}
+        <if test=" activityTemplate.teamOwner != null and activityTemplate.teamOwner.id != null ">
+            , ActivityTemplate_teamOwner=#{activityTemplate.teamOwner.id}
+        </if>
+        <if test=" activityTemplate.sourceActivity != null and activityTemplate.sourceActivity.id !='' ">
+            , ActivityTemplate_tsourceActivity=#{activityTemplate.sourceActivity.id}
+        </if>
+        <if test=" activityTemplate.name != null and activityTemplate.name !='' ">
+            , ActivityTemplate_name=#{activityTemplate.name}
+        </if>
+        <if test=" activityTemplate.introduction != null and activityTemplate.introduction !='' ">
+            , ActivityTemplate_introduction=#{activityTemplate.introduction}
+        </if>
+        <if test=" activityTemplate.open != null ">
+            , ActivityTemplate_open=#{activityTemplate.open}
+        </if>
+        where ActivityTemplate_id = #{activityTemplate.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteActivityTemplate" parameterType="com.adj.xiaotuanti.pojo.ActivityTemplate">
+		delete from ActivityTemplate where ActivityTemplate_id = #{activityTemplate.id};
+	</delete>
+    <delete id="deleteActivityTemplateById">
+		delete from ActivityTemplate where ActivityTemplate_id = #{activityTemplateId};
+	</delete>
+
+
+    <!-- select -->
+    <select id="getActivityTemplate" parameterType="com.adj.xiaotuanti.pojo.ActivityTemplate"
+            resultMap="ActivityTemplateResultMap">
+		select * from ActivityTemplate where ActivityTemplate_id = #{activityTemplate.id};
+	</select>
+    <select id="getActivityTemplateById" resultMap="ActivityTemplateResultMap">
+		select * from ActivityTemplate where ActivityTemplate_id = #{activityTemplateId};
+	</select>
+    <select id="getAllActivityTemplates" resultMap="ActivityTemplateResultMap">
+		select * from ActivityTemplate;
+	</select>
+    <select id="getActivityTemplatesByUserId" resultMap="ActivityTemplateResultMap">
+        select activityTemplate.* from User LEFT JOIN relation_user_activitytemplate ON relation_user=user_id
+		LEFT JOIN ActivityTemplate ON relation_activityTemplate = activityTemplate_id
+		WHERE user_id = #{userId};
+	</select>
+
+    <select id="getActivityTemplatesByTeamId" resultMap="ActivityTemplateResultMap">
+        select * from ActivityTemplate
+		WHERE activityTemplate_teamOwner = #{teamId};
+	</select>
+
+    <select id="getActivityTemplatesByUserIdOrTeamId" resultMap="ActivityTemplateResultMap">
+        select activityTemplate.* from User LEFT JOIN relation_user_activitytemplate ON relation_user=user_id
+		LEFT JOIN ActivityTemplate ON relation_activityTemplate = activityTemplate_id
+		WHERE ( user_id = #{userId} or activityTemplate_teamOwner = #{teamId} ) and activityTemplate_id is NOT null;
+	</select>
+
+    <select id="getActivityTemplatesByUserIdOrTeamIdOrTagNames" resultMap="ActivityTemplateResultMap">
+        select activityTemplate.* from User
+        LEFT JOIN relation_user_activitytemplate ON relation_user=user_id
+		LEFT JOIN ActivityTemplate ON relation_activityTemplate = activityTemplate_id
+		LEFT JOIN relation_tag_activitytemplate rta on activitytemplate.activityTemplate_id = rta.relation_activityTemplate
+		LEFT JOIN tag t on rta.relation_tag = t.tag_id
+		WHERE (
+		user_id = #{userId}
+		or activityTemplate_teamOwner = #{teamId}
+		or
+        <foreach collection="tagNames" open="(" separator="or" close=")" item="tagName">
+            tag_name like concat('%', #{tagName}, '%')
+        </foreach>
+		)
+		and activityTemplate_id is NOT null;
+	</select>
+
+
+    <select id="getActivityTemplateByActivityId" resultMap="ActivityTemplateResultMap">
+        select * from ActivityTemplate WHERE activityTemplate_sourceActivity = #{activityId};
+	</select>
+
+
+    <!-- 根据用户id，获取本团所有活动模板及其他团体的开放活动模板 -->
+    <select id="getActivityTemplatesByOpenAndTeamNotOpen" resultMap="ActivityTemplateResultMap">
+        SELECT DISTINCT activitytemplate.* from activitytemplate
+        LEFT JOIN team t on activitytemplate.activityTemplate_teamOwner = t.team_id
+        LEFT JOIN member m on t.team_id = m.member_team
+        WHERE activitytemplate_open = 1 or member_user = #{userId}
+        ORDER BY activityTemplate_createTime DESC;
+    </select>
+    <select id="getActivityTemplatesByOpenAndTeamNotOpenAndKeywords" resultMap="ActivityTemplateResultMap">
+        SELECT DISTINCT activitytemplate.* from activitytemplate
+        LEFT JOIN team t on activitytemplate.activityTemplate_teamOwner = t.team_id
+        LEFT JOIN member m on t.team_id = m.member_team
+        WHERE activitytemplate_open = 1 or member_user = #{userId} AND
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            activityTemplate_name like concat('%', #{keyword}, '%') or activityTemplate_introduction like concat('%', #{keyword}, '%')
+        </foreach>
+        ORDER BY activityTemplate_createTime DESC;
+    </select>
+
+</mapper>

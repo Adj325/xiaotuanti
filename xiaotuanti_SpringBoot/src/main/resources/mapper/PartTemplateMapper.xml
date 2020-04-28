@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.PartTemplateDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.PartTemplate" id="PartTemplateResultMap">
+        <id property="id" column="partTemplate_id"/>
+        <result property="order" column="partTemplate_order" javaType="Integer"/>
+        <result property="begTime" column="partTemplate_begTime" javaType="Integer"/>
+        <result property="endTime" column="partTemplate_endTime" javaType="Integer"/>
+        <result property="content" column="partTemplate_content" javaType="String"/>
+
+        <association property="activityTemplate" column="{activityTemplateId=partTemplate_activityTemplate}"
+                     select="com.adj.xiaotuanti.dao.ActivityTemplateDAO.getActivityTemplateById">
+        </association>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addPartTemplate" parameterType="com.adj.xiaotuanti.pojo.PartTemplate"
+            useGeneratedKeys="true" keyProperty="partTemplate.id">
+        insert into PartTemplate (
+        partTemplate_activityTemplate
+        <if test=" partTemplate.order != null ">
+            , partTemplate_order
+        </if>
+        <if test=" partTemplate.begTime != null ">
+            , partTemplate_begTime
+        </if>
+        <if test=" partTemplate.endTime != null ">
+            , partTemplate_endTime
+        </if>
+        <if test=" partTemplate.content != null and partTemplate.content !='' ">
+            , partTemplate_content
+        </if>
+        ) value (
+        #{partTemplate.activityTemplate.id}
+        <if test=" partTemplate.order != null ">
+            , #{partTemplate.order}
+        </if>
+
+        <if test=" partTemplate.begTime != null ">
+            , #{partTemplate.begTime}
+        </if>
+
+        <if test=" partTemplate.endTime != null ">
+            , #{partTemplate.endTime}
+        </if>
+
+        <if test=" partTemplate.content != null and partTemplate.content !='' ">
+            , #{partTemplate.content}
+        </if>
+
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updatePartTemplate" parameterType="com.adj.xiaotuanti.pojo.PartTemplate">
+        update PartTemplate set
+        partTemplate_id = #{partTemplate.id}
+        <if test=" partTemplate.activityTemplate != null ">
+            , partTemplate_activityTemplate=#{partTemplate.activityTemplate.id}
+        </if>
+        <if test=" partTemplate.order != null ">
+            , partTemplate_order=#{partTemplate.order}
+        </if>
+        <if test=" partTemplate.begTime != null ">
+            , partTemplate_begTime=#{partTemplate.begTime}
+        </if>
+        <if test=" partTemplate.endTime != null ">
+            , partTemplate_endTime=#{partTemplate.endTime}
+        </if>
+        <if test=" partTemplate.content != null and partTemplate.content !='' ">
+            , partTemplate_content=#{partTemplate.content}
+        </if>
+
+        where partTemplate_id = #{partTemplate.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deletePartTemplate" parameterType="com.adj.xiaotuanti.pojo.PartTemplate">
+		delete from PartTemplate where partTemplate_id = #{partTemplate.id};
+	</delete>
+    <delete id="deletePartTemplateById">
+		delete from PartTemplate where partTemplate_id = #{partTemplateId};
+	</delete>
+    <delete id="deletePartTemplatesByActivityTemplate">
+		delete from PartTemplate where partTemplate_activityTemplate = #{activityTemplate.id};
+	</delete>
+
+
+    <!-- select -->
+    <select id="getPartTemplate" parameterType="com.adj.xiaotuanti.pojo.PartTemplate" resultMap="PartTemplateResultMap">
+		select * from PartTemplate where partTemplate_id = #{partTemplate.id};
+	</select>
+    <select id="getPartTemplateById" resultMap="PartTemplateResultMap">
+		select * from PartTemplate where partTemplate_id = #{partTemplateId};
+	</select>
+    <select id="getAllPartTemplates" resultMap="PartTemplateResultMap">
+		select * from PartTemplate;
+	</select>
+
+    <select id="getPartTemplatesByActivityTemplateId" resultMap="PartTemplateResultMap">
+		select * from PartTemplate where partTemplate_activityTemplate = #{activityTemplateId};
+	</select>
+
+</mapper>

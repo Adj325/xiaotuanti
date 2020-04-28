@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.Relation_Post_CommentDAO">
+
+	<!-- resultMap -->	
+	<resultMap type="com.adj.xiaotuanti.pojo.Relation_Post_Comment" id="Relation_Post_CommentResultMap">
+		<id property="id" column="relation_id"/>
+
+		<association property="post" column="{postId=relation_post}" select="com.adj.xiaotuanti.dao.PostDAO.getPostById" />
+		<association property="comment" column="{commentId=relation_comment}" select="com.adj.xiaotuanti.dao.CommentDAO.getCommentById" />
+	</resultMap>
+
+	<!-- add -->	
+	<insert id="addRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Post_Comment"
+        useGeneratedKeys="true" keyProperty="relation.id">
+		insert into Relation_Post_Comment (
+		relation_post
+		<if test=" relation.comment != null ">
+			, relation_comment
+		</if>
+		) value (			
+		#{relation.post.id}
+		<if test=" relation.comment != null ">
+			, #{relation.comment.id}
+		</if>
+                    
+		);
+	</insert>
+
+	<!-- update -->	
+	<update id="updateRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Post_Comment" >
+		update Relation_Post_Comment set
+		relation_id = #{relation.id}
+		<if test=" relation.post != null ">
+			, relation_post=#{relation.post.id}
+		</if>
+		<if test=" relation.comment != null ">
+			, relation_comment=#{relation.comment.id}
+		</if>
+
+		where relation_id = #{relation.id};
+	</update>
+
+	<!-- delete -->	
+	<delete id="deleteRelation_Post_Comment" parameterType="com.adj.xiaotuanti.pojo.Relation_Post_Comment">
+		delete from Relation_Post_Comment where relation_id = #{relation.id};
+	</delete>
+	<delete id="deleteRelation_Post_CommentById">
+		delete from Relation_Post_Comment where relation_id = #{RelationId};
+	</delete>
+
+
+	<!-- select -->	
+	<select id="getRelation_Post_Comment" parameterType="com.adj.xiaotuanti.pojo.Relation_Post_Comment" resultMap="Relation_Post_CommentResultMap">
+		select * from Relation_Post_Comment where relation_id = #{relation.id};
+	</select>
+	<select id="getRelation_Post_CommentById" resultMap="Relation_Post_CommentResultMap">
+		select * from Relation_Post_Comment where relation_id = #{RelationId};
+	</select>
+	<select id="getAllRelation_Post_Comments" resultMap="Relation_Post_CommentResultMap">
+		select * from Relation_Post_Comment;
+	</select>
+
+</mapper>

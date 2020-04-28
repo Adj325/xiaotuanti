@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.Relation_Tag_ActivityDAO">
+
+	<!-- resultMap -->	
+	<resultMap type="com.adj.xiaotuanti.pojo.Relation_Tag_Activity" id="Relation_Tag_ActivityResultMap">
+		<id property="id" column="relation_id"/>
+
+		<association property="tag" column="{tagId=relation_tag}" select="com.adj.xiaotuanti.dao.TagDAO.getTagById" />
+		<association property="activity" column="{activityId=relation_activity}" select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById" />
+	</resultMap>
+
+	<!-- add -->	
+	<insert id="addRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Tag_Activity"
+        useGeneratedKeys="true" keyProperty="relation.id">
+		insert into Relation_Tag_Activity (
+		relation_tag
+		<if test=" relation.activity != null ">
+			, relation_activity
+		</if>
+		) value (			
+		#{relation.tag.id}
+		<if test=" relation.activity != null ">
+			, #{relation.activity.id}
+		</if>
+                    
+		);
+	</insert>
+
+	<!-- update -->	
+	<update id="updateRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Tag_Activity" >
+		update Relation_Tag_Activity set
+		relation_id = #{relation.id}
+		<if test=" relation.tag != null ">
+			, relation_tag=#{relation.tag.id}
+		</if>
+		<if test=" relation.activity != null ">
+			, relation_activity=#{relation.activity.id}
+		</if>
+
+		where relation_id = #{relation.id};
+	</update>
+
+	<!-- delete -->	
+	<delete id="deleteRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Tag_Activity">
+		delete from Relation_Tag_Activity where relation_id = #{relation.id};
+	</delete>
+	<delete id="deleteRelationById">
+		delete from Relation_Tag_Activity where relation_id = #{relationId};
+	</delete>
+	<delete id="deleteRelationByActivity"  parameterType="com.adj.xiaotuanti.pojo.Activity">
+		delete from Relation_Tag_Activity where relation_activity = #{activity.id};
+	</delete>
+	<delete id="deleteRelationByActivityId">
+		delete from Relation_Tag_Activity where relation_activity = #{activityId};
+	</delete>
+
+	<!-- select -->	
+	<select id="getRelation" parameterType="com.adj.xiaotuanti.pojo.Relation_Tag_Activity" resultMap="Relation_Tag_ActivityResultMap">
+		select * from Relation_Tag_Activity where relation_id = #{relation.id};
+	</select>
+	<select id="getRelationById" resultMap="Relation_Tag_ActivityResultMap">
+		select * from Relation_Tag_Activity where relation_id = #{relationId};
+	</select>
+	<select id="getAllRelations" resultMap="Relation_Tag_ActivityResultMap">
+		select * from Relation_Tag_Activity;
+	</select>
+
+</mapper>

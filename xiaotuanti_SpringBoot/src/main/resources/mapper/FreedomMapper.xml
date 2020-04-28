@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.FreedomDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Freedom" id="FreedomResultMap">
+        <id property="id" column="freedom_id"/>
+        <result property="day" column="freedom_day" javaType="Integer"/>
+        <result property="begTime" column="freedom_begTime" javaType="Integer"/>
+        <result property="endTime" column="freedom_endTime" javaType="Integer"/>
+
+        <association property="userOwner" column="{userId=freedom_userOwner}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addFreedom" parameterType="com.adj.xiaotuanti.pojo.Freedom"
+            useGeneratedKeys="true" keyProperty="freedom.id">
+        insert into Freedom (
+        freedom_userOwner
+        <if test=" freedom.day != null ">
+            , freedom_day
+        </if>
+        <if test=" freedom.begTime != null ">
+            , freedom_begTime
+        </if>
+        <if test=" freedom.endTime != null ">
+            , freedom_endTime
+        </if>
+        ) value (
+        #{freedom.userOwner.id}
+        <if test=" freedom.day != null ">
+            , #{freedom.day}
+        </if>
+
+        <if test=" freedom.begTime != null ">
+            , #{freedom.begTime}
+        </if>
+
+        <if test=" freedom.endTime != null ">
+            , #{freedom.endTime}
+        </if>
+
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updateFreedom" parameterType="com.adj.xiaotuanti.pojo.Freedom">
+        update Freedom set
+        freedom_id = #{freedom.id}
+        <if test=" freedom.userOwner != null ">
+            , freedom_userOwner=#{freedom.userOwner.id}
+        </if>
+        <if test=" freedom.day != null ">
+            , freedom_day=#{freedom.day}
+        </if>
+        <if test=" freedom.begTime != null ">
+            , freedom_begTime=#{freedom.begTime}
+        </if>
+        <if test=" freedom.endTime != null ">
+            , freedom_endTime=#{freedom.endTime}
+        </if>
+
+        where freedom_id = #{freedom.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteFreedom" parameterType="com.adj.xiaotuanti.pojo.Freedom">
+		delete from Freedom where freedom_id = #{freedom.id};
+	</delete>
+    <delete id="deleteFreedomById">
+		delete from Freedom where freedom_id = #{freedomId};
+	</delete>
+    <delete id="deleteFreedomsByUser" parameterType="com.adj.xiaotuanti.pojo.User">
+		delete from Freedom where freedom_userOwner = #{user.id};
+	</delete>
+    <delete id="deleteFreedomsByUserId">
+		delete from Freedom where freedom_userOwner = #{userId};
+	</delete>
+    <delete id="deleteFreedomsByUserIdAndDay">
+		delete from Freedom where freedom_userOwner = #{userId} and freedom_day=#{day};
+	</delete>
+
+
+    <!-- select -->
+    <select id="getFreedom" parameterType="com.adj.xiaotuanti.pojo.Freedom" resultMap="FreedomResultMap">
+		select * from Freedom where freedom_id = #{freedom.id};
+	</select>
+    <select id="getFreedomById" resultMap="FreedomResultMap">
+		select * from Freedom where freedom_id = #{freedomId};
+	</select>
+    <select id="getFreedomsByUserId" resultMap="FreedomResultMap">
+		select * from Freedom where freedom_userOwner = #{userId} order by freedom_day, freedom_begTime ASC ;
+	</select>
+    <select id="getFreedomsByUserIdAndDay" resultMap="FreedomResultMap">
+		select * from Freedom where freedom_userOwner = #{userId} and freedom_day=#{day} and freedom.freedom_id is NOT null order by freedom_begTime ASC ;
+	</select>
+    <select id="getAllFreedoms" resultMap="FreedomResultMap">
+		select * from Freedom;
+	</select>
+
+</mapper>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ActivityDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Activity" id="ActivityResultMap">
+        <id property="id" column="activity_id"/>
+        <result property="name" column="activity_name"/>
+        <result property="introduction" column="activity_introduction"/>
+        <result property="open" column="activity_open"/>
+        <result property="status" column="activity_status"/>
+        <result property="begTime" column="activity_begTime" javaType="DATE"/>
+        <result property="endTime" column="activity_endTime" javaType="DATE"/>
+        <result property="createTime" column="activity_createTime" javaType="DATE"/>
+
+        <association property="sourceActivityTemplate" column="{activityTemplateId=activity_sourceActivityTemplate}"
+                     select="com.adj.xiaotuanti.dao.ActivityTemplateDAO.getActivityTemplateById"/>
+        <association property="parts" column="{activityId=activity_id}"
+                     select="com.adj.xiaotuanti.dao.PartDAO.getPartsByActivityId"/>
+        <association property="tags" column="{activityId=activity_id}"
+                     select="com.adj.xiaotuanti.dao.TagDAO.getTagsByActivityId"/>
+        <association property="team" column="{teamId=activity_team}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById"/>
+        <association property="userConductor" column="{userId=activity_userConductor}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+        <association property="memberConductor" column="{userId=activity_userConductor, teamId=activity_team}"
+                     select="com.adj.xiaotuanti.dao.MemberDAO.getMemberByUserIdAndTeamId"/>
+        <association property="willingNumber" column="{activityId=activity_id}"
+                     select="com.adj.xiaotuanti.dao.WillingDAO.getWillingNumberByActivityId"/>
+        <association property="officialNumber" column="{activityId=activity_id}"
+                     select="com.adj.xiaotuanti.dao.Relation_Activity_UserDAO.getRecordNumberByActivityId"/>
+    </resultMap>
+
+    <select id="getActivitiesByStatusNotBegDateLessThan" resultMap="ActivityResultMap">
+        SELECT * from Activity
+        WHERE activity_status != #{status} and to_days(activity_begTime) &lt; to_days(#{date})
+    </select>
+
+    <select id="getActivitiesByBegDate" resultMap="ActivityResultMap">
+        SELECT * from Activity
+        WHERE to_days(activity_begTime) = to_days(#{date})
+    </select>
+
+    <delete id="deleteActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        delete from Activity where activity_id = #{activityId};
+    </delete>
+
+    <delete id="deleteActivityById">
+        delete from Activity where activity_id = #{activityId};
+    </delete>
+
+    <!-- 获取所有活动 -->
+    <select id="getAllActivities" resultMap="ActivityResultMap">
+        select * from Activity
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 根据用户id，获取本团所有活动及其他团体的开放活动 -->
+    <select id="getActivitiesByOpenAndTeamNotOpen" resultMap="ActivityResultMap">
+        select * from Activity Left JOIN Member on activity_team = member_team
+        where activity_open = 1 or member_user = #{userId}
+        ORDER BY activity_begTime DESC;
+    </select>
+    <select id="getActivitiesByOpenAndTeamNotOpenAndKeywords" resultMap="ActivityResultMap">
+        select * from Activity Left JOIN Member on activity_team = member_team
+        where activity_open = 1 or member_user = #{userId} AND
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            activity_introduction like concat('%', #{keyword}, '%') or activity_name like concat('%', #{keyword}, '%')
+        </foreach>
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 根据团体id，获取所有活动 -->
+    <select id="getActiveActivitiesByTeamId" resultMap="ActivityResultMap">
+        select * from Activity
+        where activity_team = #{teamId}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 根据团体id，获取所有活动 -->
+    <select id="getActivitiesByTeamId" resultMap="ActivityResultMap">
+        select * from Activity
+        where activity_team = #{teamId}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 获取活动-根据id-->
+    <select id="getActivityById" resultMap="ActivityResultMap">
+        select * from Activity
+        where activity_id = #{activityId}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 发现-获取未结束的活动 -->
+    <select id="getActivitiesFromAllTeams" resultMap="ActivityResultMap">
+        select * from Activity
+        where activity_status = 1
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 发现-获取用户团体未结束的活动 -->
+    <select id="getActivitiesFromTeamsUserJoin" resultMap="ActivityResultMap"
+            parameterType="com.adj.xiaotuanti.pojo.User">
+        select Activity.* from Activity, Member
+        where member_team = activity_team
+              and member_user = #{user.id}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 获取活动-根据发起用户 -->
+    <select id="getActivitiesUserConduct" resultMap="ActivityResultMap" parameterType="com.adj.xiaotuanti.pojo.User">
+        select * from Activity
+        where activity_userConductor = #{user.id}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 获取活动-根据参与用户 -->
+    <select id="getActivitiesUserJoin" resultMap="ActivityResultMap">
+        select * from Activity, Relation_Activity_User
+        where activity_id = relation_activity and relation_user = #{user.id}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <!-- 添加活动 -->
+    <insert id="addActivity" parameterType="com.adj.xiaotuanti.pojo.Activity"
+            useGeneratedKeys="true" keyProperty="activity.id">
+        insert into Activity(
+        activity_userConductor
+        <if test="activity.team != null and activity.team.id !=''">
+            ,activity_team
+        </if>
+        <if test="activity.sourceActivityTemplate != null and activity.sourceActivityTemplate.id !=''">
+            ,activity_sourceActivityTemplate
+        </if>
+        <if test="activity.name != null and activity.name !=''">
+            ,activity_name
+        </if>
+        <if test="activity.introduction != null and activity.introduction !=''">
+            ,activity_introduction
+        </if>
+        <if test="activity.begTime != null">
+            ,activity_begTime
+        </if>
+        <if test="activity.endTime != null">
+            ,activity_endTime
+        </if>
+        <if test="activity.status != null">
+            ,activity_status
+        </if>
+        <if test="activity.open != null">
+            ,activity_open
+        </if>
+        ) value (
+        #{activity.userConductor.id}
+        <if test="activity.team != null and activity.team.id !=''">
+            ,#{activity.team.id}
+        </if>
+        <if test="activity.sourceActivityTemplate != null and activity.sourceActivityTemplate.id !=''">
+            ,#{activity.sourceActivityTemplate.id}
+        </if>
+        <if test="activity.name != null and activity.name !=''">
+            ,#{activity.name}
+        </if>
+        <if test="activity.introduction != null and activity.introduction !=''">
+            ,#{activity.introduction}
+        </if>
+        <if test="activity.begTime != null">
+            ,#{activity.begTime}
+        </if>
+        <if test="activity.endTime != null">
+            ,#{activity.endTime}
+        </if>
+        <if test="activity.status != null">
+            ,#{activity.status}
+        </if>
+        <if test="activity.open != null">
+            ,#{activity.open}
+        </if>
+        );
+    </insert>
+
+    <!-- 修改活动 -->
+    <update id="updateActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        update Activity
+        set activity_id = #{activity.id}
+        <if test="activity.team != null and activity.team.id !=''">
+            ,activity_team=#{activity.team.id}
+        </if>
+        <if test="activity.sourceActivityTemplate != null and activity.sourceActivityTemplate.id !=''">
+            ,activity_sourceActivityTemplate=#{activity.sourceActivityTemplate.id}
+        </if>
+        <if test="activity.name != null and activity.name !=''">
+            ,activity_name=#{activity.name}
+        </if>
+        <if test="activity.introduction != null and activity.introduction !=''">
+            ,activity_introduction=#{activity.introduction}
+        </if>
+        <if test="activity.begTime != null">
+            ,activity_begTime=#{activity.begTime}
+        </if>
+        <if test="activity.endTime != null">
+            ,activity_endTime=#{activity.endTime}
+        </if>
+        <if test="activity.status != null">
+            ,activity_status=#{activity.status}
+        </if>
+        <if test="activity.open != null">
+            ,activity_open=#{activity.open}
+        </if>
+        where activity_id = #{activity.id};
+    </update>
+
+    <!-- 获取活动 -->
+    <select id="getActivityByUserAndTeam" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        select * from Activity
+        where activity_team=#{activity.team.id} and activity_userConductor=#{activity.userConductor.id}
+        ORDER BY activity_begTime DESC;
+    </select>
+
+    <select id="searchActivitiesByKeyword" resultMap="ActivityResultMap">
+        SELECT * FROM Activity WHERE TRUE AND
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            activity_introduction like concat('%', #{keyword}, '%')
+        </foreach>
+        ORDER BY activity_begTime DESC;
+    </select>
+
+</mapper>

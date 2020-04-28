@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ApplyDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Apply" id="ApplyResultMap">
+        <id property="id" column="apply_id"/>
+        <result property="result" column="apply_result"/>
+
+        <association property="team" column="{teamId=apply_team}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById">
+        </association>
+
+        <association property="userAuthor" column="{userId=apply_userAuthor}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+    </resultMap>
+
+    <!-- 添加申请 -->
+    <insert id="addApply" parameterType="com.adj.xiaotuanti.pojo.Apply"
+            useGeneratedKeys="true" keyProperty="apply.id">
+        insert into Apply
+            (apply_team, apply_userAuthor)
+            value
+            (#{apply.team.id}, #{apply.userAuthor.id});
+    </insert>
+
+    <!-- 修改申请 -->
+    <update id="updateApply" parameterType="com.adj.xiaotuanti.pojo.Apply">
+        update Apply
+        set
+        apply_id = #{apply.id}
+        <if test=" apply.team!=null and apply.team.id!=null ">
+            ,apply_team=#{apply.team.id}
+        </if>
+        <if test=" apply.userAuthor!=null and apply.userAuthor.id!=null ">
+            ,apply_userAuthor=#{apply.userAuthor.id}
+        </if>
+        where apply_id = #{apply.id};
+    </update>
+
+    <!-- 删除申请 -->
+    <delete id="deleteApply" parameterType="com.adj.xiaotuanti.pojo.Apply">
+        delete from Apply where apply_id = #{apply.id};
+    </delete>
+
+    <delete id="deleteApplyById">
+        delete from Apply where apply_id = #{applyId};
+    </delete>
+
+    <!-- 根据id获取申请 -->
+    <select id="getApplyById" resultMap="ApplyResultMap">
+        select * from Apply
+        where apply_id = #{applyId}
+    </select>
+
+    <!-- 获取申请 -->
+    <select id="getApplyByTeamIdAndUserId" parameterType="com.adj.xiaotuanti.pojo.Apply" resultMap="ApplyResultMap">
+        select * from Apply
+        where apply_team=#{apply.team.id} and apply_userAuthor=#{apply.userAuthor.id};
+    </select>
+
+    <!-- 获取所有申请 -->
+    <select id="getAllApplies" resultMap="ApplyResultMap">
+        select * from Apply
+    </select>
+
+    <!-- 根据用户，获取用户的所有申请 -->
+    <select id="getAppliesByUserId" resultMap="ApplyResultMap">
+        select * from Apply
+        where apply_userAuthor = #{userId}
+    </select>
+
+    <!-- 根据用户，获取用户的所有申请 -->
+    <select id="getAppliesByUser" resultMap="ApplyResultMap" parameterType="com.adj.xiaotuanti.pojo.Apply">
+        select * from Apply
+        where apply_userAuthor = #{user.id}
+    </select>
+
+    <!-- 根据团体id，获取团体的所有“未处理”的申请 -->
+    <select id="getAppliesByTeamId" resultMap="ApplyResultMap">
+        select * from Apply
+        where apply_team = #{teamId}
+    </select>
+
+</mapper>

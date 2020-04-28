@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ExperienceDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Experience" id="ExperienceResultMap">
+        <id property="id" column="experience_id"/>
+        <result property="content" column="experience_content" javaType="String"/>
+        <result property="postTime" column="experience_postTime" javaType="DATE"/>
+
+        <association property="userAuthor" column="{userId=experience_userAuthor}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+        <association property="memberAuthor" column="{userId=experience_userAuthor, teamId=experience_team}"
+                     select="com.adj.xiaotuanti.dao.MemberDAO.getMemberByUserIdAndTeamId"/>
+        <association property="activity" column="{activityId=experience_activity}"
+                     select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById"/>
+        <association property="team" column="{teamId=experience_team}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById"/>
+    </resultMap>
+
+    <insert id="addExperience" parameterType="com.adj.xiaotuanti.pojo.Experience"
+            useGeneratedKeys="true" keyProperty="experience.id">
+        insert into Experience (
+        experience_userAuthor
+        <if test=" experience.team != null ">
+            , experience_team
+        </if>
+        <if test=" experience.activity != null ">
+            , experience_activity
+        </if>
+        <if test=" experience.content != null and experience.content !='' ">
+            , experience_content
+        </if>
+        <if test=" experience.postTime != null ">
+            , experience_postTime
+        </if>
+        ) value (
+        #{experience.userAuthor.id}
+        <if test=" experience.team != null ">
+            , #{experience.team.id}
+        </if>
+        <if test=" experience.activity != null ">
+            , #{experience.activity.id}
+        </if>
+        <if test=" experience.content != null and experience.content !='' ">
+            , #{experience.content}
+        </if>
+        <if test=" experience.postTime != null ">
+            , #{experience.postTime}
+        </if>
+        );
+    </insert>
+
+    <update id="updateExperience" parameterType="com.adj.xiaotuanti.pojo.Experience">
+        update Experience set
+        experience_id = #{experience.id}
+        <if test=" experience.userAuthor != null ">
+            , experience_userAuthor=#{experience.userAuthor.id}
+        </if>
+        <if test=" experience.team != null ">
+            , experience_team=#{experience.team.id}
+        </if>
+        <if test=" experience.content != null and experience.content !='' ">
+            , experience_content=#{experience.content}
+        </if>
+        <if test=" experience.postTime != null ">
+            , experience_postTime=#{experience.postTime}
+        </if>
+        where experience_id = #{experience.id};
+    </update>
+
+    <delete id="deleteExperience" parameterType="com.adj.xiaotuanti.pojo.Experience">
+        delete from Experience
+        where experience_id = #{experience.id};
+    </delete>
+    <delete id="deleteExperienceById">
+        delete from Experience
+        where experience_id = #{experienceId};
+    </delete>
+
+    <select id="getExperience" parameterType="com.adj.xiaotuanti.pojo.Experience" resultMap="ExperienceResultMap">
+        select *
+        from Experience
+        where experience_id = #{experience.id};
+    </select>
+
+    <select id="getExperienceById" resultMap="ExperienceResultMap">
+        select * from Experience
+        where experience_id = #{experienceId};
+    </select>
+
+    <select id="getExperienceByTeamId" resultMap="ExperienceResultMap">
+        select * from Experience
+        where experience_team = #{teamId};
+    </select>
+
+    <select id="getExperienceByActivityId" resultMap="ExperienceResultMap">
+        select * from Experience
+        where experience_activity = #{activityId};
+    </select>
+
+</mapper>

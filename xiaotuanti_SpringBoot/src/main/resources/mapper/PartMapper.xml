@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.PartDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Part" id="PartResultMap">
+        <id property="id" column="part_id"/>
+        <result property="order" column="part_order" javaType="Integer"/>
+        <result property="content" column="part_content" />
+        <result property="begTime" column="part_begTime" javaType="Integer"/>
+        <result property="targetNumber" column="part_targetNumber" javaType="Integer"/>
+        <result property="endTime" column="part_endTime" javaType="Integer"/>
+
+        <association property="activity" column="{activityId=part_activity}"
+                     select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById">
+        </association>
+        <association property="officialIds" column="{partId=part_id}"
+                     select="com.adj.xiaotuanti.dao.Relation_Part_UserDAO.getUserIdxByPartId">
+        </association>
+    </resultMap>
+
+
+    <insert id="addPart" parameterType="com.adj.xiaotuanti.pojo.Part"
+            useGeneratedKeys="true" keyProperty="part.id">
+        insert into Part (
+        part_activity
+        <if test=" part.order != null ">
+            , part_order
+        </if>
+        <if test=" part.targetNumber != null ">
+            , part_targetNumber
+        </if>
+        <if test=" part.content != null and part.content != ''">
+            , part_content
+        </if>
+        <if test=" part.begTime != null ">
+            , part_begTime
+        </if>
+        <if test=" part.endTime != null ">
+            , part_endTime
+        </if>
+        ) value (
+        #{part.activity.id}
+        <if test=" part.order != null ">
+            , #{part.order}
+        </if>
+        <if test=" part.targetNumber != null ">
+            , #{part.targetNumber}
+        </if>
+        <if test=" part.content != null and part.content != ''">
+            , #{part.content}
+        </if>
+        <if test=" part.begTime != null ">
+            , #{part.begTime}
+        </if>
+        <if test=" part.endTime != null ">
+            , #{part.endTime}
+        </if>
+        );
+    </insert>
+
+
+    <!-- update -->
+    <update id="updatePart" parameterType="com.adj.xiaotuanti.pojo.Part">
+        update Part set
+        part_id = #{part.id}
+
+        <if test=" part.activity != null ">
+            , part_activity=#{part.activity.id}
+        </if>
+
+        <if test=" part.order != null ">
+            , part_order=#{part.order}
+        </if>
+
+        <if test=" part.targetNumber != null ">
+            , part_targetNumber=#{part.targetNumber}
+        </if>
+
+        <if test=" part.content != null and part.content != ''">
+            , part_content=#{part.content}
+        </if>
+
+        <if test=" part.begTime != null ">
+            , part_begTime=#{part.begTime}
+        </if>
+
+        <if test=" part.endTime != null ">
+            , part_endTime=#{part.endTime}
+        </if>
+
+        where part_id = #{part.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deletePart" parameterType="com.adj.xiaotuanti.pojo.Part">
+        delete from Part
+        where part_id = #{part.id};
+    </delete>
+    <delete id="deletePartById">
+        delete from Part
+        where part_id = #{partId};
+    </delete>
+    <delete id="deletePartByActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        delete from Part
+        where part_activity = #{activity.id};
+    </delete>
+    <delete id="deletePartByActivityId">
+        delete from Part
+        where part_activity = #{activityId};
+    </delete>
+
+    <!-- select -->
+    <select id="getPart" parameterType="com.adj.xiaotuanti.pojo.Part" resultMap="PartResultMap">
+        select *
+        from Part
+        where part_id = #{part.id};
+    </select>
+    <select id="getPartById" resultMap="PartResultMap">
+        select *
+        from Part
+        where part_id = #{partId};
+    </select>
+    <select id="getPartsByActivityId" resultMap="PartResultMap">
+        select *
+        from Part
+        where part_activity = #{activityId};
+    </select>
+    <select id="getPartsByActivity" resultMap="PartResultMap">
+        select *
+        from Part
+        where part_activity = #{activity.id};
+    </select>
+
+</mapper>

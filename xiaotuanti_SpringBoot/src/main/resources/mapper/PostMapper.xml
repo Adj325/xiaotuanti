@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.PostDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Post" id="PostResultMap">
+        <id property="id" column="post_id"/>
+        <result property="title" column="post_title" javaType="String"/>
+        <result property="content" column="post_content" javaType="String"/>
+        <result property="postTime" column="post_postTime"/>
+        <result property="type" column="post_type"/>
+
+        <association property="userAuthor" column="{userId=post_userAuthor}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addPost" parameterType="com.adj.xiaotuanti.pojo.Post"
+            useGeneratedKeys="true" keyProperty="post.id">
+        insert into Post (
+        post_userAuthor
+        <if test=" post.title != null and post.title !='' ">
+            , post_title
+        </if>
+        <if test=" post.content != null and post.content !='' ">
+            , post_content
+        </if>
+        <if test=" post.postTime != null">
+            , post_postTime
+        </if>
+        <if test=" post.type != null">
+            , post_type
+        </if>
+        ) value (
+        #{post.userAuthor.id}
+        <if test=" post.title != null and post.title !='' ">
+            , #{post.title}
+        </if>
+        <if test=" post.content != null and post.content !='' ">
+            , #{post.content}
+        </if>
+        <if test=" post.postTime != null ">
+            , #{post.postTime}
+        </if>
+        <if test=" post.type != null">
+            , #{post.type}
+        </if>
+
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updatePost" parameterType="com.adj.xiaotuanti.pojo.Post">
+        update Post set
+        post_id = #{post.id}
+        <if test=" post.userAuthor != null ">
+            , post_userAuthor=#{post.userAuthor.id}
+        </if>
+        <if test=" post.title != null and post.title !='' ">
+            , post_title=#{post.title}
+        </if>
+        <if test=" post.content != null and post.content !='' ">
+            , post_content=#{post.content}
+        </if>
+        <if test=" post.postTime != null ">
+            , post_postTime=#{post.postTime}
+        </if>
+        <if test=" post.type != null">
+            , post_type=#{post.type}
+        </if>
+
+        where post_id = #{post.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deletePost" parameterType="com.adj.xiaotuanti.pojo.Post">
+		delete from Post where post_id = #{post.id};
+	</delete>
+    <delete id="deletePostById">
+		delete from Post where post_id = #{postId};
+	</delete>
+
+
+    <!-- select -->
+    <select id="getPost" parameterType="com.adj.xiaotuanti.pojo.Post" resultMap="PostResultMap">
+		select * from Post where post_id = #{post.id};
+	</select>
+    <select id="getPostById" resultMap="PostResultMap">
+		select * from Post where post_id = #{postId};
+	</select>
+    <select id="getAllPosts" resultMap="PostResultMap">
+		select * from Post;
+	</select>
+
+    <select id="getAllPostsByKeywords" resultMap="PostResultMap">
+        select * from Post
+        WHERE
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            post_title like concat('%', #{keyword}, '%') or post_content like concat('%', #{keyword}, '%')
+        </foreach>
+        ORDER BY post_postTime DESC ;
+    </select>
+
+
+    <select id="getPostsByUser" resultMap="PostResultMap">
+		select * from Post where post_userAuthor=#{user.id};
+	</select>
+
+    <select id="getPostsByUserAndKeywords" resultMap="PostResultMap">
+        select * from Post
+        WHERE post_userAuthor=#{user.id} and
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            post_title like concat('%', #{keyword}, '%') or post_content like concat('%', #{keyword}, '%')
+        </foreach>
+        ORDER BY post_postTime DESC ;
+    </select>
+</mapper>

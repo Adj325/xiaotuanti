@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.TagDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Tag" id="TagResultMap">
+        <id property="id" column="tag_id"/>
+        <result property="name" column="tag_name" javaType="String"/>
+
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addTag" parameterType="com.adj.xiaotuanti.pojo.Tag"
+            useGeneratedKeys="true" keyProperty="tag.id">
+		insert into Tag (
+		tag_name
+		) value (			
+		#{tag.name}
+		);
+	</insert>
+
+    <!-- update -->
+    <update id="updateTag" parameterType="com.adj.xiaotuanti.pojo.Tag">
+        update Tag set
+        tag_id = #{tag.id}
+        <if test=" tag.name != null and tag.name !='' ">
+            , tag_name=#{tag.name}
+        </if>
+        where tag_id = #{tag.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteTag" parameterType="com.adj.xiaotuanti.pojo.Tag">
+		delete from Tag where tag_id = #{tag.id};
+	</delete>
+    <delete id="deleteTagById">
+		delete from Tag where tag_id = #{tagId};
+	</delete>
+
+    <!-- select -->
+    <select id="getTag" parameterType="com.adj.xiaotuanti.pojo.Tag" resultMap="TagResultMap">
+		select * from Tag where tag_id = #{tag.id};
+	</select>
+    <select id="getTagById" resultMap="TagResultMap">
+		select * from Tag where tag_id = #{tagId};
+	</select>
+
+    <select id="getTagByName" resultMap="TagResultMap">
+		select * from Tag where tag_name = #{name};
+	</select>
+
+    <select id="getAllTags" resultMap="TagResultMap">
+		select * from Tag;
+	</select>
+
+
+    <select id="getTagsByActivityTemplateId" resultMap="TagResultMap">
+		select Tag.* from
+		ActivityTemplate LEFT JOIN  relation_tag_activitytemplate rta ON  rta.relation_activityTemplate = activityTemplate_id
+		LEFT JOIN  Tag ON  rta.relation_tag = tag_id
+		where activityTemplate_id = #{templateId} and tag_id is not NULL;
+	</select>
+
+	<select id="getTagsByActivityId" resultMap="TagResultMap">
+		select Tag.* from
+		Activity LEFT JOIN  relation_tag_activity ra ON  ra.relation_activity = activity_id
+		LEFT JOIN  Tag ON  ra.relation_tag = tag_id
+		where activity_id = #{activityId} and tag_id is not NULL;
+	</select>
+
+</mapper>

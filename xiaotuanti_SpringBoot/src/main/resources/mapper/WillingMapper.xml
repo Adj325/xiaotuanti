@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.WillingDAO">
+    <!-- resultMap -->
+    <resultMap id="WillingResultMap" type="com.adj.xiaotuanti.pojo.Willing">
+        <id column="willing_id" property="id"/>
+        <result column="willing_type" property="type"/>
+
+        <association column="{userId=willing_userOwner}" property="userOwner"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+        <association column="{activityId=willing_activity}" property="activity"
+                     select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById">
+        </association>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addWilling" keyProperty="willing.id" parameterType="com.adj.xiaotuanti.pojo.Willing"
+            useGeneratedKeys="true">
+        insert into Willing (willing_userOwner, willing_activity, willing_type)
+        value ( #{willing.userOwner.id}, #{willing.activity.id}, #{willing.type} );
+    </insert>
+
+    <!-- update -->
+    <update id="updateWilling" parameterType="com.adj.xiaotuanti.pojo.Willing">
+        update Willing set
+        willing_id = #{willing.id}
+
+        <if test=" willing.id != null ">
+            , willing_id=#{willing.id}
+        </if>
+
+        <if test=" willing.userOwner != null ">
+            , willing_userOwner=#{willing.userOwner.id}
+        </if>
+
+        <if test=" willing.activity != null ">
+            , willing_activity=#{willing.activity.id}
+        </if>
+
+        <if test=" willing.type != null ">
+            , willing_type=#{willing.type}
+        </if>
+
+        where willing_id = #{willing.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteWilling" parameterType="com.adj.xiaotuanti.pojo.Willing">
+        delete from Willing
+        where willing_id = #{willing.id};
+    </delete>
+    <delete id="deleteWillingById">
+        delete from Willing
+        where willing_id = #{willingId};
+    </delete>
+    <delete id="deleteWillingByActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        delete from Willing
+        where willing_activity = #{activity.id};
+    </delete>
+    <delete id="deleteWillingByActivityId">
+        delete from Willing
+        where willing_activity = #{activityId};
+    </delete>
+    <delete id="deleteWillingByUserIdAndActivityId">
+        delete from Willing
+        where willing_userOwner=#{userId} and willing_activity = #{activityId};
+    </delete>
+
+    <select id="isSignUpByUserIdAndActivityId" resultType="Integer">
+        select count(*) from Willing
+        where willing_activity = #{activityId} and willing_userOwner = #{userId};
+    </select>
+
+    <!-- select -->
+    <select id="getWilling" parameterType="com.adj.xiaotuanti.pojo.Willing">
+        select * from Willing
+        where willing_id = #{willing.id};
+    </select>
+
+    <select id="getWillingById">
+        select * from Willing
+        where willing_id = #{willingId};
+    </select>
+
+    <select id="getWillingNumberByActivityId" resultType="Integer">
+        select count(*) from Willing
+        where willing_activity = #{activityId};
+    </select>
+
+    <select id="getWillingByUserIdAndActivityId" resultMap="WillingResultMap">
+        select * from Willing
+        where willing_userOwner=#{userId} and willing_activity = #{activityId};
+    </select>
+
+</mapper>

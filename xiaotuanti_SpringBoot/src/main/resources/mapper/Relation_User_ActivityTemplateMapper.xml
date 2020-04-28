@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.Relation_User_ActivityTemplateDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Relation_User_ActivityTemplate"
+               id="Relation_User_ActivityTemplateResultMap">
+        <id property="id" column="relation_id"/>
+        <association property="activityTemplate" column="{activityTemplateId=Relation_ActivityTemplate}"
+                     select="com.adj.xiaotuanti.dao.ActivityTemplateDAO.getActivityTemplateById"/>
+        <association property="user" column="{userId=Relation_User}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+    </resultMap>
+
+    <!-- get -->
+    <select id="getRelation"
+            resultMap="Relation_User_ActivityTemplateResultMap"
+            parameterType="com.adj.xiaotuanti.pojo.Relation_User_ActivityTemplate">
+        SELECT * FROM Relation_User_ActivityTemplate
+        where Relation_User = #{relation.user.id} AND Relation_ActivityTemplate = #{relation.activityTemplate.id};
+    </select>
+
+    <select id="countByActivityTemplateId" resultType="Integer">
+        SELECT count(*) FROM Relation_User_ActivityTemplate
+        where Relation_ActivityTemplate = #{activityTemplateId};
+    </select>
+
+    <!-- add -->
+    <insert id="addRelation"
+            parameterType="com.adj.xiaotuanti.pojo.Relation_User_ActivityTemplate"
+            useGeneratedKeys="true" keyProperty="relation.id">
+        insert into Relation_User_ActivityTemplate (
+        Relation_User, Relation_ActivityTemplate
+        ) value (
+        #{relation.user.id}, #{relation.activityTemplate.id}
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updateRelation"
+            parameterType="com.adj.xiaotuanti.pojo.Relation_User_ActivityTemplate">
+        update Relation_User_ActivityTemplate set
+            Relation_User=#{relation.user.id}, Relation_ActivityTemplate=#{relation.activityTemplate.id}
+        where Relation_User = #{relation.user.id} AND Relation_ActivityTemplate = #{relation.activityTemplate.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteRelation"
+            parameterType="com.adj.xiaotuanti.pojo.Relation_User_ActivityTemplate">
+		delete from Relation_User_ActivityTemplate where Relation_User = #{relation.user.id} AND Relation_ActivityTemplate = #{relation.activityTemplate.id};
+	</delete>
+
+</mapper>

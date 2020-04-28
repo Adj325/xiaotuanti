@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ChatDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Chat" id="ChatResultMap">
+        <id property="id" column="chat_id"/>
+        <result property="content" column="chat_content"/>
+        <result property="postTime" column="chat_postTime"/>
+
+        <association property="activity" column="{activityId=chat_activity}"
+                     select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById">
+        </association>
+        <association property="user" column="{userId=chat_user}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+        <association property="member" column="{userId=chat_user, activityId=chat_activity}"
+                     select="com.adj.xiaotuanti.dao.MemberDAO.getMemberByUserIdAndActivityId">
+        </association>
+        <association property="bin" column="{binId=chat_bin}"
+                     select="com.adj.xiaotuanti.dao.BinDAO.getBinById">
+        </association>
+    </resultMap>
+
+    <!-- add -->
+    <insert id="addChat" parameterType="com.adj.xiaotuanti.pojo.Chat"
+            useGeneratedKeys="true" keyProperty="chat.id">
+        insert into Chat (
+        chat_user
+        <if test=" chat.activity != null and chat.activity.id != null">
+            , chat_activity
+        </if>
+        <if test=" chat.bin != null ">
+            , chat_bin
+        </if>
+        <if test=" chat.content != null ">
+            , chat_content
+        </if>
+        <if test=" chat.postTime != null ">
+            , chat_postTime
+        </if>
+        ) value (
+        #{chat.user.id}
+        <if test=" chat.activity != null and chat.activity.id != null">
+            , #{chat.activity.id}
+        </if>
+        <if test=" chat.bin != null ">
+            , #{chat.bin.id}
+        </if>
+        <if test=" chat.content != null ">
+            , #{chat.content}
+        </if>
+        <if test=" chat.postTime != null ">
+            , #{chat.postTime}
+        </if>
+        );
+    </insert>
+
+    <!-- update -->
+    <update id="updateChat" parameterType="com.adj.xiaotuanti.pojo.Chat">
+        update Chat set
+        chat_id = #{chat.id}
+        <if test=" chat.id != null ">
+            , chat_id=#{chat.id}
+        </if>
+        <if test=" chat.user != null ">
+            , chat_user=#{chat.user.id}
+        </if>
+        <if test=" chat.member != null ">
+            , chat_bin=#{chat.bin.id}
+        </if>
+        <if test=" chat.activity != null and chat.activity.id != null">
+            , chat_activity=#{chat.activity.id}
+        </if>
+        <if test=" chat.content != null ">
+            , chat_content=#{chat.content}
+        </if>
+        <if test=" chat.postTime != null ">
+            , chat_postTime=#{chat.postTime}
+        </if>
+        where chat_id = #{chat.id};
+    </update>
+
+    <!-- delete -->
+    <delete id="deleteChat" parameterType="com.adj.xiaotuanti.pojo.Chat">
+        DELETE FROM Chat WHERE chat_id = #{chat.id};
+    </delete>
+    <delete id="deleteChatById">
+        DELETE FROM Chat WHERE chat_id = #{chatId};
+    </delete>
+
+    <!-- select -->
+    <select id="getChat100" resultMap="ChatResultMap">
+        SELECT * FROM Chat WHERE chat_activity = #{activityId};
+    </select>
+    <select id="getChat" parameterType="com.adj.xiaotuanti.pojo.Chat" resultMap="ChatResultMap">
+        SELECT * FROM Chat WHERE chat_id = #{chat.id};
+    </select>
+    <select id="getChatById" resultMap="ChatResultMap">
+        SELECT * FROM Chat WHERE chat_id = #{chatId};
+    </select>
+
+</mapper>

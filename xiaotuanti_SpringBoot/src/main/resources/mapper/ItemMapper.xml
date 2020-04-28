@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.ItemDAO">
+
+    <resultMap id="ItemResultMap" type="com.adj.xiaotuanti.pojo.Item">
+        <id column="item_id" property="id" />
+        <result column="item_contact" property="contact" />
+        <result column="item_introduction" property="introduction" />
+
+        <association column="{teamId=item_team}" property="team" select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById" />
+    </resultMap>
+
+    <insert id="addItem" keyProperty="item.id" parameterType="com.adj.xiaotuanti.pojo.Item" useGeneratedKeys="true">
+        insert into Item (
+        item_introduction
+        <if test=" item.contact != null and item.contact !='' ">
+            , item_contact
+        </if>
+        <if test=" item.team != null ">
+            , item_team
+        </if>
+        ) value (
+        #{item.introduction}
+        <if test=" item.contact != null and item.contact !='' ">
+            , #{item.contact}
+        </if>
+        <if test=" item.team != null ">
+            , #{item.team.id}
+        </if>
+        );
+    </insert>
+
+    <update id="updateItem" parameterType="com.adj.xiaotuanti.pojo.Item">
+        update Item set
+        item_id = #{item.id}
+        <if test=" item.contact != null and item.contact !='' ">
+            , item_contact=#{item.contact}
+        </if>
+        <if test=" item.team != null ">
+            , item_team=#{item.team.id}
+        </if>
+        <if test=" item.introduction != null and item.introduction !='' ">
+            , item_introduction=#{item.introduction}
+        </if>
+        where item_id = #{item.id};
+    </update>
+
+    <delete id="deleteItem" parameterType="com.adj.xiaotuanti.pojo.Item">
+        delete from Item
+        where item_id = #{item.id};
+    </delete>
+
+    <delete id="deleteItemById">
+        delete from Item
+        where item_id = #{itemId};
+    </delete>
+
+    <select id="getItem" parameterType="com.adj.xiaotuanti.pojo.Item" resultMap="ItemResultMap">
+        select * from Item
+        where item_id = #{item.id};
+    </select>
+
+    <select id="getItemById" resultMap="ItemResultMap">
+        select * from Item
+        where item_id = #{itemId};
+    </select>
+
+    <select id="getItemsByTeamId" resultMap="ItemResultMap">
+        select * from Item
+        where item_team = #{teamId};
+    </select>
+
+    <select id="getAllItems" resultMap="ItemResultMap">
+        select * from Item;
+    </select>
+
+    <select id="getItemsByTeamIdAndKeyword" resultMap="ItemResultMap">
+        SELECT * FROM Item WHERE item_team = #{teamId} AND
+        <foreach collection="keywords" open="(" separator="OR" close=")" item="keyword">
+            item_introduction like concat('%', #{keyword}, '%')
+        </foreach>;
+    </select>
+
+    <select id="getItemsByKeyword" resultMap="ItemResultMap">
+        SELECT * FROM Item WHERE TRUE AND
+        <foreach collection="keywords" open="(" separator="OR" close=")" item="keyword">
+            item_introduction like concat('%', #{keyword}, '%')
+        </foreach>;
+    </select>
+</mapper>

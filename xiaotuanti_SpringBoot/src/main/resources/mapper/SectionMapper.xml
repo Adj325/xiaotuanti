@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.SectionDAO">
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Section" id="SectionResultMap">
+        <id property="id" column="section_id"/>
+        <result property="name" column="section_name"/>
+
+        <association property="team" column="{teamId=section_team}"
+                     select="com.adj.xiaotuanti.dao.TeamDAO.getTeamById">
+        </association>
+
+        <association property="memberNum" column="{sectionId=section_id}"
+                     select="com.adj.xiaotuanti.dao.MemberDAO.getMembersNumBySectionId">
+        </association>
+    </resultMap>
+
+    <!-- 获取所有部门 -->
+    <select id="getAllSections" resultMap="SectionResultMap">
+        select *
+        from Section
+    </select>
+
+    <!-- 根据id获取部门 -->
+    <select id="getSectionById" resultMap="SectionResultMap">
+        select *
+        from Section
+        where section_id = #{sectionId}
+    </select>
+
+    <!-- 根据团体id获取部门 -->
+    <select id="getSectionsByTeamId" resultMap="SectionResultMap">
+        select *
+        from Section
+        where section_team = #{teamId}
+    </select>
+
+    <!-- 添加部门 -->
+    <insert id="addSection" parameterType="com.adj.xiaotuanti.pojo.Section"
+            useGeneratedKeys="true" keyProperty="section.id">
+        insert into Section(
+            section_team
+            <if test="section.name != null and section.name !=''">
+                ,section_name
+            </if>
+        ) value (
+            #{section.team.id}
+            <if test="section.name != null and section.name !=''">
+                ,#{section.name}
+            </if>
+        );
+    </insert>
+
+    <!-- 根据部门名及团体获取部门 -->
+    <select id="getSectionByNameAndTeam" resultType="com.adj.xiaotuanti.pojo.Section"
+            parameterType="com.adj.xiaotuanti.pojo.Section">
+        select * from Section
+        where section_name=#{section.name} and section_team=#{section.team.id}
+    </select>
+
+    <!-- 修改部门 -->
+    <update id="updateSection" parameterType="com.adj.xiaotuanti.pojo.Section">
+        update Section
+        set section_name = #{section.name}
+        where section_id = #{section.id};
+    </update>
+
+    <!-- 删除部门 -->
+    <delete id="deleteSection" parameterType="com.adj.xiaotuanti.pojo.Section">
+        delete from Section where section_id = #{section.id};
+    </delete>
+
+</mapper>

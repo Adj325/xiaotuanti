@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.Relation_Activity_UserDAO">
+
+    <!-- resultMap -->
+    <resultMap id="RecordResultMap" type="com.adj.xiaotuanti.pojo.Relation_Activity_User">
+        <id column="relation_id" property="id" />
+
+        <association column="{userId=relation_user}" property="user" select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+        <association column="{activityId=relation_activity}" property="activity" select="com.adj.xiaotuanti.dao.ActivityDAO.getActivityById">
+        </association>
+    </resultMap>
+
+    <insert id="addRecord" keyProperty="record.id" parameterType="com.adj.xiaotuanti.pojo.Relation_Activity_User" useGeneratedKeys="true">
+        insert into Relation_Activity_User (
+            relation_user, relation_activity
+        ) value (
+            #{record.userOwner.id}, #{record.activity.id}
+        );
+    </insert>
+
+    <update id="updateRecord" parameterType="com.adj.xiaotuanti.pojo.Relation_Activity_User">
+        update Relation_Activity_User set
+        relation_id = #{record.id}
+        <if test=" record.id != null ">
+            , relation_id=#{record.id}
+        </if>
+        <if test=" record.userOwner != null ">
+            , relation_user=#{record.userOwner.id}
+        </if>
+        <if test=" record.activity != null ">
+            , relation_activity=#{record.activity.id}
+        </if>
+        where relation_id = #{record.id};
+    </update>
+
+    <delete id="deleteRecord" parameterType="com.adj.xiaotuanti.pojo.Relation_Activity_User">
+        delete from Relation_Activity_User
+        where relation_id = #{record.id};
+    </delete>
+
+    <delete id="deleteRecordById">
+        delete from Relation_Activity_User
+        where relation_id = #{recordId};
+    </delete>
+    <delete id="deleteRecordByActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        delete from Relation_Activity_User
+        where relation_id = #{activity.id};
+    </delete>
+    <delete id="deleteRecordByActivityId">
+        delete from Relation_Activity_User
+        where relation_id = #{activityId};
+    </delete>
+
+    <select id="getRecord" parameterType="com.adj.xiaotuanti.pojo.Relation_Activity_User">
+        select *
+        from Relation_Activity_User
+        where relation_id = #{record.id};
+    </select>
+
+    <select id="getRecordById">
+        select * from Relation_Activity_User
+        where relation_id = #{recordId};
+    </select>
+
+    <select id="getRecordByActivityIdAndUserId" resultType="Integer">
+        select count(relation_id)
+        from Relation_Activity_User where relation_activity = #{activityId} and relation_user = #{userId};
+    </select>
+
+    <select id="getRecordNumberByMemberId" resultType="Integer">
+        select count(relation_id)
+        from Relation_Activity_User, Member
+        where relation_user = member_user and member_id = #{memberId};
+    </select>
+
+    <select id="getRecordNumberByActivityId" resultType="Integer">
+        select count(relation_id)
+        from Relation_Activity_User
+        where relation_activity = #{activityId};
+    </select>
+
+    <select id="getRecordNumberByActivityIdAndUserId" resultType="Integer">
+        select count(relation_id)
+        from Relation_Activity_User
+        where relation_activity = #{activityId} and relation_user = #{userId};
+    </select>
+</mapper>

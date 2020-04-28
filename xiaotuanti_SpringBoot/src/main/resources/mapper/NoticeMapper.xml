@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.NoticeDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Notice" id="NoticeResultMap">
+        <id property="id" column="notice_id"/>
+        <result property="content" column="notice_content"/>
+        <result property="postTime" column="notice_postTime"/>
+        <result property="isRead" column="notice_isRead"/>
+
+        <association property="receiver" column="{userId=notice_receiver}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+    </resultMap>
+
+    <!-- 添加通知 -->
+    <insert id="addNotice" parameterType="com.adj.xiaotuanti.pojo.Notice"
+            useGeneratedKeys="true" keyProperty="notice.id">
+        insert into Notice
+        (notice_content, notice_postTime, notice_receiver)
+        value
+        (#{notice.content}, #{notice.postTime}, #{notice.receiver.id});
+    </insert>
+
+    <update id="updateNotice" parameterType="com.adj.xiaotuanti.pojo.Notice">
+        update Notice
+        set notice_isRead = #{notice.isRead}
+        where notice_id = #{notice.id}
+    </update>
+
+    <!-- 删除通知-根据Notice -->
+    <delete id="deleteNotice" parameterType="com.adj.xiaotuanti.pojo.Notice">
+        delete from Notice
+        where notice_id = #{notice.id};
+    </delete>
+
+    <!-- 删除通知-根据NoticeId -->
+    <delete id="deleteNoticeById" parameterType="com.adj.xiaotuanti.pojo.Notice">
+        delete from Notice
+        where notice_id = #{noticeId};
+    </delete>
+
+    <!-- 获取通知-根据NoticeId -->
+    <select id="getNoticeById" resultMap="NoticeResultMap">
+        select *
+        from Notice
+        where notice_id = #{noticeId}
+    </select>
+
+    <!-- 获取通知-根据userId -->
+    <select id="getNoticesByUserAndIsRead" resultType="Integer">
+        select count(*)
+        from Notice
+        where notice_receiver = #{user.id} and notice_isRead =#{isRead}
+     </select>
+
+    <!-- 获取通知-根据userId -->
+    <select id="getNoticesByUserId" resultMap="NoticeResultMap">
+        select *
+        from Notice
+        where notice_receiver = #{userId}
+        order by notice_postTime desc
+    </select>
+
+    <!-- 获取通知-根据user -->
+    <select id="getNoticesByUser" parameterType="com.adj.xiaotuanti.pojo.User" resultMap="NoticeResultMap">
+        select *
+        from Notice
+        where notice_receiver = #{user.id}
+    </select>
+
+</mapper>

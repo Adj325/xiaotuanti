@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.CommentDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Comment" id="CommentResultMap">
+        <id property="id" column="comment_id"/>
+        <result property="content" column="comment_content" javaType="String"/>
+        <result property="postTime" column="comment_postTime" javaType="DATE"/>
+
+        <association property="userAuthor" column="{userId=comment_userAuthor}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById"/>
+    </resultMap>
+
+    <insert id="addComment" parameterType="com.adj.xiaotuanti.pojo.Comment"
+            useGeneratedKeys="true" keyProperty="comment.id">
+        insert into comments (
+        comment_userAuthor
+        <if test=" comment.content != null and comment.content !='' ">
+            ,comment_content
+        </if>
+        <if test=" comment.postTime != null ">
+            , comment_postTime
+        </if>
+        ) value (
+        #{comment.userAuthor.id}
+        <if test=" comment.content != null and comment.content !='' ">
+            , #{comment.content}
+        </if>
+        <if test=" comment.postTime != null ">
+            , #{comment.postTime}
+        </if>
+        );
+    </insert>
+
+    <update id="updateComment" parameterType="com.adj.xiaotuanti.pojo.Comment">
+        update comments set
+        comment_id = #{comment.id}
+
+        <if test=" comment.id != null ">
+            , comment_id=#{comment.id}
+        </if>
+        <if test=" comment.userAuthor != null ">
+            , comment_userAuthor=#{comment.userAuthor.id}
+        </if>
+        <if test=" comment.activity != null ">
+            , comment_activity=#{comment.activity.id}
+        </if>
+        <if test=" comment.content != null and comment.content !='' ">
+            , comment_content=#{comment.content}
+        </if>
+        <if test=" comment.postTime != null ">
+            , comment_postTime=#{comment.postTime}
+        </if>
+        where comment_id = #{comment.id};
+    </update>
+
+    <delete id="deleteComment" parameterType="com.adj.xiaotuanti.pojo.Comment">
+        delete from comments
+        where comment_id = #{comment.id};
+    </delete>
+    <delete id="deleteCommentById">
+        delete from comments
+        where comment_id = #{commentId};
+    </delete>
+    <delete id="deleteCommentByActivity" parameterType="com.adj.xiaotuanti.pojo.Activity">
+        delete from comments
+        where comment_id = #{activity.id};
+    </delete>
+    <delete id="deleteCommentByActivityId">
+        delete from comments
+        where comment_id = #{activityId};
+    </delete>
+
+    <select id="getComment" parameterType="com.adj.xiaotuanti.pojo.Comment" resultMap="CommentResultMap">
+        select *
+        from comments
+        where comment_id = #{comment.id};
+    </select>
+    <select id="getCommentById" resultMap="CommentResultMap">
+        select *
+        from comments
+        where comment_id = #{commentId};
+    </select>
+    <select id="getCommentsByUserId" resultMap="CommentResultMap">
+        select * from comments where comment_userAuthor = #{userId};
+    </select>
+
+    <select id="getCommentsByActivityId" resultMap="CommentResultMap">
+        select comments.* from activity LEFT JOIN relation_activity_comment on activity.activity_id = relation_activity_comment.relation_activity left join comments on relation_activity_comment.relation_comment = comments.comment_id
+        where activity_id = #{activityId} and comment_id is NOT NULL ;
+    </select>
+
+    <select id="getCommentsByPostId" resultMap="CommentResultMap">
+        select comments.* from post left join relation_post_comment rpc on post.post_id = rpc.relation_post left join comments on rpc.relation_comment = comment_id
+        where post_id = #{postId} AND comment_id is NOT NULL;
+    </select>
+
+    <select id="isCommented" resultType="Integer">
+        select count(*) from comments left join relation_activity_comment rac on comments.comment_id = rac.relation_comment
+        where relation_activity = #{activityId} and comment_userAuthor = #{userId};
+    </select>
+</mapper>

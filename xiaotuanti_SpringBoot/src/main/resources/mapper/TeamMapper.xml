@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.adj.xiaotuanti.dao.TeamDAO">
+
+    <!-- resultMap -->
+    <resultMap type="com.adj.xiaotuanti.pojo.Team" id="TeamResultMap">
+        <id property="id" column="team_id"/>
+        <result property="name" column="team_name"/>
+        <result property="invite" column="team_invite"/>
+        <result property="introduction" column="team_introduction"/>
+
+        <association property="userOwner" column="{userId=team_userOwner}"
+                     select="com.adj.xiaotuanti.dao.UserDAO.getUserById">
+        </association>
+
+        <association property="memberOwner" column="{teamId=team_id, userId=team_userOwner}"
+                     select="com.adj.xiaotuanti.dao.MemberDAO.getMemberByUserIdAndTeamId">
+        </association>
+    </resultMap>
+
+    <!-- 查询所有Team -->
+    <select id="getAllTeams" resultMap="TeamResultMap">
+        select * from Team;
+    </select>
+
+    <!-- 根据id获取团体 -->
+    <select id="getTeamById" resultMap="TeamResultMap">
+        select * from Team
+        where team_id = #{teamId};
+    </select>
+
+    <!-- 根据邀请码获取多个团体 -->
+    <select id="getTeamsByInvite" resultMap="TeamResultMap">
+        select * from Team
+        where team_invite = #{invite};
+    </select>
+
+    <!-- 获取用户的创建的所有团体 -->
+    <select id="getTeamsUserCreated" resultMap="TeamResultMap">
+        select * from Team
+        where team_userOwner = #{userId};
+    </select>
+
+    <!-- 获取用户的加入的所有团体 -->
+    <select id="getTeamsUserJoined" resultMap="TeamResultMap">
+        select *
+        from Team, Member
+        where member_user = #{userId} and member_team = team_id;
+    </select>
+
+    <!-- 添加团体 -->
+    <insert id="addTeam" parameterType="com.adj.xiaotuanti.pojo.Team"
+            useGeneratedKeys="true" keyProperty="team.id">
+        insert into Team(
+            team_userOwner
+            <if test="team.name != null and team.name !=''">
+                ,team_name
+            </if>
+            <if test="team.introduction != null and team.introduction !=''">
+                ,team_introduction
+            </if>
+        ) value (
+            #{team.userOwner.id}
+            <if test="team.name != null and team.name !=''">
+                ,#{team.name}
+            </if>
+            <if test="team.introduction != null and team.name !=''">
+                ,#{team.introduction}
+            </if>
+        );
+    </insert>
+
+    <delete id="deleteTeamById">
+        delete from Team where team_id = #{teamId};
+    </delete>
+
+    <!-- 修改团体 -->
+    <insert id="updateTeam" parameterType="com.adj.xiaotuanti.pojo.Team">
+        update Team
+        set
+            team_id=#{team.id}
+            <if test="team.userOwner != null">
+                , team_userOwner=#{team.userOwner.id}
+            </if>
+            <if test="team.name != null and team.name !=''">
+                , team_name=#{team.name}
+            </if>
+            <if test="team.invite != null and team.invite !=''">
+                , team_invite=#{team.invite}
+            </if>
+            <if test="team.introduction != null and team.name !=''">
+                ,team_introduction=#{team.introduction}
+            </if>
+        where team_id=#{team.id}
+    </insert>
+
+    <select id="getTeamsByKeyword" resultMap="TeamResultMap">
+        SELECT * FROM Team WHERE TRUE AND
+        <foreach collection="keywords" open="(" separator="or" close=")" item="keyword">
+            team_introduction like concat('%', #{keyword}, '%')
+        </foreach>;
+    </select>
+</mapper>
